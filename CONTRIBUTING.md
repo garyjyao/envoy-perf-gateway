@@ -48,9 +48,19 @@ more detailed architectural writeup, including some non-obvious gotchas
 cd gatewayctl && go build ./... && go test ./...
 
 # gateway / config server images
+make build-gatewayctl         # build gatewayctl first
+./gatewayctl/gatewayctl render  # once, on a fresh checkout (see below)
 make all                      # gateway image
 make -C config_server image   # config server image
 ```
+
+`rendered/` is gitignored and the `Dockerfile` bakes it into the image as
+the seed config, so it has to exist before `docker build`. On a fresh
+checkout, build `gatewayctl` and run `./gatewayctl/gatewayctl render` once
+from the repo root; otherwise the build fails with
+`"/rendered": not found`. `make all` does not regenerate it, so it won't
+overwrite any local changes to `rendered/`; re-run `render` yourself when
+`config/values.yaml` or the render code changes.
 
 **If your change touches `gatewayctl/internal/render`,
 `gatewayctl/internal/envoyconfig`, `config/envoy.yaml`, or the
